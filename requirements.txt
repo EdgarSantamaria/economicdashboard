@@ -4,4 +4,4 @@ datetime
 streamlit
 pandas
 numpy
-statsmodels.api
+statsmodels
