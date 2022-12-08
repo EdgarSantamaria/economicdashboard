@@ -5,4 +5,4 @@ streamlit
 pandas
 numpy
 statsmodels
-sklearn
+scikit-learn
