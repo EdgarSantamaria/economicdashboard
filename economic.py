@@ -7,12 +7,12 @@ import datetime
 
 
 
-#from sklearn.linear_model import LinearRegression, LogisticRegression
-#from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.ensemble import RandomForestRegressor
 
-#from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split
 
-#from sklearn import metrics
+from sklearn import metrics
 
 #abbrevation
 def us_state_to_abbrev(string):
@@ -77,7 +77,7 @@ def us_state_to_abbrev(string):
         }
     return us_state_to_abbrev[string]
 
-df1 = pd.read_csv("data/Master_DF.csv")
+df1 = pd.read_csv("Master_DF.csv")
 
 
 df1_nat = df1[df1['GeoName'] == 'United States']
@@ -100,15 +100,21 @@ df1_states["Abbrev"] = df1_states['GeoName'].apply(us_state_to_abbrev)
 df1_regions = df1[df1['GeoName'].isin(['Wyoming', 'New England', 'Mideast',
        'Great Lakes', 'Plains', 'Southeast', 'Southwest',
        'Rocky Mountain', 'Far West'])]
-
-
-
+       
 #site config
 st.set_page_config(
     page_title="State Economic Comp",
     page_icon="📈",
     layout = "wide"
 )
+
+#header column
+col0 = st.columns([1])[0]
+
+# column 0 header
+with col0:
+    st.header('Welcome to my economic dashboard!')
+
 
 # CHoro pleth map alternatint with input date 
 user_input = st.text_input( "Input text")
@@ -127,55 +133,74 @@ if(user_input != "" ):
     st.plotly_chart(fig)
 
 st.dataframe(df1)
-#header column
-col0 = st.columns([1])[0]
-
-
-
-# column 0 header
-with col0:
-    st.header('Welcome to my economic dashboard!')
 
 # column 1 pick a state for regression plot and real gdp data
-    st.write('Choose states to view.')
+st.write('Choose states to view.')
     
-    #create a sorted list for user to choose from
-    state_list = sorted(df1_states['Abbrev'].unique())
+#create a sorted list for user to choose from
+state_list = sorted(df1_states['Abbrev'].unique())
     
-    #selection tool
-    selected_states = st.multiselect(
-        "Select which states to compare.",
-        state_list
-        )
+#selection tool
+selected_states = st.multiselect(
+    "Select which states to compare.",
+    state_list
+    )
         
-    #create dataframe of the seleted states
-    state_df = df1_states[df1_states['Abbrev'].isin(selected_states)].copy()
-    chart = st.radio(
-    "Which plot do you want to see?",
-    ('Regression', 'Line'))
-    #create scatter plot for selected states
+#create dataframe of the seleted states
+state_df = df1_states[df1_states['Abbrev'].isin(selected_states)].copy()
+
+#create a list of ecnomonic data to see
+cat_list = ['Year', 'Real GDP', 'Personal Income', 'Population', 'Real GDP per Capita', 'Personal Income per Capita']
+
+selected_cat = st.multiselect(
+    "Select what data you want to see.",
+    cat_list,
+    max_selections = 2,
+    )
+chart = ""
+if(len(selected_cat) == 2):
+    cat_1 = selected_cat[1]
+    cat_2 = selected_cat[0]
+    
+    chart = st.selectbox(
+        "Which plot do you want to see?",
+        ('None', 'Regression', 'Line'),
+    )
+
+created = False
+
+#create scatter plot for selected states
+if (chart == 'Regression'):
     fig = px.scatter(
-        state_df, x= "Real GDP", y= "Personal Income", opacity=0.65,
+        state_df, x= cat_1, y= cat_2, opacity=0.65,
         trendline='ols', trendline_color_override='darkblue'
     )
-    
+    created = True
+elif (chart == 'Line'):
+    n_state_df = state_df.sort_values(by=cat_1)
+    fig = px.line(
+        n_state_df, x= cat_1, y= cat_2, 
+    )
+    created = True
+else:
+    created = False
+
+if(created):
     # change the background color of plot
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
         'paper_bgcolor': 'rgba(0, 0, 0, 0)',
-        })
+    })
 
     # adds grid axes for better vizualization
     fig.update_xaxes(showgrid=False, gridwidth=1, gridcolor='Gray')
     fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='Gray')
+    #fixes plot sizing
+    st.plotly_chart(fig, use_container_width=True)
     
     # create stats from user selected states dataframe
     # we can probably have the user pick what stats they want to see
-    summary_stats = state_df.groupby('Abbrev')['Real GDP'].agg(['mean', 'median', 'min', 'max', 'std'])
-    
-    #print out the stats in index
-    summary_stats.index = summary_stats.index.rename('Real GDP Info')
-    st.write('Real GDP Info', summary_stats)
-    
-    #fixes plot sizing
-    st.plotly_chart(fig, use_container_width=True)
+    summary_stats = state_df
+    st.write('Selected States Info')
+    st.dataframe(summary_stats)
+
