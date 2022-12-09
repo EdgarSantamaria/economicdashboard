@@ -77,7 +77,7 @@ def us_state_to_abbrev(string):
         }
     return us_state_to_abbrev[string]
 
-df1 = pd.read_csv("Master_DF.csv")
+df1 = pd.read_csv("data/Master_DF.csv")
 
 
 df1_nat = df1[df1['GeoName'] == 'United States']
