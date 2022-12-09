@@ -150,7 +150,7 @@ selected_states = st.multiselect(
 df1_states['Date'] = pd.to_datetime(df1_states['Date'], format='%Y-%m-%d').dt.date
 #create dataframe of the seleted states
 state_df = df1_states[df1_states['Abbrev'].isin(selected_states)].copy()
-
+selected_cat = []
 #create a list of ecnomonic data to see
 cat_list = ['Real GDP', 'Personal Income', 'Population', 'Real GDP per Capita', 'Personal Income per Capita', 'Date']
 if(len(selected_states) == 1):
