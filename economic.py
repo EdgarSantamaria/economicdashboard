@@ -77,7 +77,7 @@ def us_state_to_abbrev(string):
         }
     return us_state_to_abbrev[string]
 
-df1 = pd.read_csv("data/Master_DF.csv")
+df1 = pd.read_csv("Master_DF.csv")
 
 
 df1_nat = df1[df1['GeoName'] == 'United States']
@@ -144,7 +144,6 @@ state_list = sorted(df1_states['Abbrev'].unique())
 selected_states = st.multiselect(
     "Select the state you want to see.",
     state_list,
-    max_selections = 1
     )
 
 df1_states['Date'] = pd.to_datetime(df1_states['Date'], format='%Y-%m-%d').dt.date
@@ -153,7 +152,7 @@ state_df = df1_states[df1_states['Abbrev'].isin(selected_states)].copy()
 selected_cat = []
 #create a list of ecnomonic data to see
 cat_list = ['Real GDP', 'Personal Income', 'Population', 'Real GDP per Capita', 'Personal Income per Capita', 'Date']
-if(len(selected_states) == 1):
+if(len(selected_states) > 0):
     selected_cat = st.multiselect(
         "Select what data you want to see.",
         cat_list,
@@ -178,31 +177,22 @@ else:
     complete = False
 
 created = False
-col1, col2 = st.columns(2)
 #create scatter plot for selected states
 if(complete):
-    with col1:
-        if (chart == 'Regression'):
-            fig = px.scatter(
-                state_df, x= cat_1, y= cat_2, opacity=0.65,
-                trendline='ols', trendline_color_override='darkblue'
-            )
-            col1.plotly_chart(fig)
-            created = True
-        elif (chart == 'Line'):
-            n_state_df = state_df.sort_values(by=cat_1)
-            fig = px.line(
-                n_state_df, x= cat_1, y= cat_2,
-            )
-            col1.plotly_chart(fig)
-            created = True
-        else:
-            created = False
-    with col2:
-        # create stats from user selected states dataframe
-        summary_stats = state_df
-        st.write('Selected States Info')
-        st.dataframe(summary_stats)
+    if (chart == 'Regression'):
+        fig = px.scatter(
+            state_df, x= cat_1, y= cat_2, opacity=0.65,
+            trendline='ols', trendline_color_override='darkblue'
+        )
+        created = True
+    elif (chart == 'Line'):
+        n_state_df = state_df.sort_values(by=cat_1)
+        fig = px.line(
+            n_state_df, x= cat_1, y= cat_2,
+        )
+        created = True
+    else:
+        created = False
 
 if(created):
     # change the background color of plot
@@ -215,4 +205,4 @@ if(created):
     fig.update_xaxes(showgrid=False, gridwidth=1, gridcolor='Gray')
     fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='Gray')
     #fixes plot sizing
-    #st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
