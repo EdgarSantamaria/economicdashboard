@@ -135,55 +135,74 @@ if(user_input != "" ):
 st.dataframe(df1)
 
 # column 1 pick a state for regression plot and real gdp data
-st.write('Choose states to view.')
+st.write('Choose state to view.')
     
 #create a sorted list for user to choose from
 state_list = sorted(df1_states['Abbrev'].unique())
     
 #selection tool
 selected_states = st.multiselect(
-    "Select which states to compare.",
-    state_list
+    "Select the state you want to see.",
+    state_list,
+    max_selections = 1
     )
-        
+
+df1_states['Date'] = pd.to_datetime(df1_states['Date'], format='%Y-%m-%d').dt.date
 #create dataframe of the seleted states
 state_df = df1_states[df1_states['Abbrev'].isin(selected_states)].copy()
 
 #create a list of ecnomonic data to see
-cat_list = ['Year', 'Real GDP', 'Personal Income', 'Population', 'Real GDP per Capita', 'Personal Income per Capita']
-
-selected_cat = st.multiselect(
-    "Select what data you want to see.",
-    cat_list,
-    max_selections = 2,
-    )
+cat_list = ['Real GDP', 'Personal Income', 'Population', 'Real GDP per Capita', 'Personal Income per Capita', 'Date']
+if(len(selected_states) == 1):
+    selected_cat = st.multiselect(
+        "Select what data you want to see.",
+        cat_list,
+        max_selections = 2,
+        )
 chart = ""
 if(len(selected_cat) == 2):
     cat_1 = selected_cat[1]
     cat_2 = selected_cat[0]
-    
-    chart = st.selectbox(
-        "Which plot do you want to see?",
-        ('None', 'Regression', 'Line'),
-    )
+    if(selected_cat.count('Date')):
+        chart = st.selectbox(
+            "Which plot do you want to see?",
+            ('None', 'Line'),
+        )
+    else:
+        chart = st.selectbox(
+            "Which plot do you want to see?",
+            ('None', 'Regression', 'Line'),
+        )
+    complete = True
+else:
+    complete = False
 
 created = False
-
+col1, col2 = st.columns(2)
 #create scatter plot for selected states
-if (chart == 'Regression'):
-    fig = px.scatter(
-        state_df, x= cat_1, y= cat_2, opacity=0.65,
-        trendline='ols', trendline_color_override='darkblue'
-    )
-    created = True
-elif (chart == 'Line'):
-    n_state_df = state_df.sort_values(by=cat_1)
-    fig = px.line(
-        n_state_df, x= cat_1, y= cat_2, 
-    )
-    created = True
-else:
-    created = False
+if(complete):
+    with col1:
+        if (chart == 'Regression'):
+            fig = px.scatter(
+                state_df, x= cat_1, y= cat_2, opacity=0.65,
+                trendline='ols', trendline_color_override='darkblue'
+            )
+            col1.plotly_chart(fig)
+            created = True
+        elif (chart == 'Line'):
+            n_state_df = state_df.sort_values(by=cat_1)
+            fig = px.line(
+                n_state_df, x= cat_1, y= cat_2,
+            )
+            col1.plotly_chart(fig)
+            created = True
+        else:
+            created = False
+    with col2:
+        # create stats from user selected states dataframe
+        summary_stats = state_df
+        st.write('Selected States Info')
+        st.dataframe(summary_stats)
 
 if(created):
     # change the background color of plot
@@ -196,11 +215,4 @@ if(created):
     fig.update_xaxes(showgrid=False, gridwidth=1, gridcolor='Gray')
     fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='Gray')
     #fixes plot sizing
-    st.plotly_chart(fig, use_container_width=True)
-    
-    # create stats from user selected states dataframe
-    # we can probably have the user pick what stats they want to see
-    summary_stats = state_df
-    st.write('Selected States Info')
-    st.dataframe(summary_stats)
-
+    #st.plotly_chart(fig, use_container_width=True)
