@@ -188,7 +188,7 @@ if(complete):
     elif (chart == 'Line'):
         n_state_df = state_df.sort_values(by=cat_1)
         fig = px.line(
-            n_state_df, x= cat_1, y= cat_2,
+            n_state_df, x= cat_1, y= cat_2, color = 'GeoName'
         )
         created = True
     else:
