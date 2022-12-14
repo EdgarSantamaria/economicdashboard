@@ -18,7 +18,7 @@ from sklearn import metrics
 def us_state_to_abbrev(string):
     us_state_to_abbrev = {
         "Alabama": "AL",
-        "Alaska": "AK",
+       # "Alaska": "AK",
         "Arizona": "AZ",
         "Arkansas": "AR",
         "California": "CA",
@@ -27,7 +27,7 @@ def us_state_to_abbrev(string):
         "Delaware": "DE",
         "Florida": "FL",
         "Georgia": "GA",
-        "Hawaii": "HI",
+        #"Hawaii": "HI",
         "Idaho": "ID",
         "Illinois": "IL",
         "Indiana": "IN",
@@ -82,10 +82,10 @@ df1 = pd.read_csv("data/Master_DF.csv")
 
 df1_nat = df1[df1['GeoName'] == 'United States']
 df1_nat["Abrev"] = "US"
-
-df1_states = df1[df1['GeoName'].isin(['Alabama', 'Alaska', 'Arizona', 'Arkansas',
+#'Hawaii','Alaska',
+df1_states = df1[df1['GeoName'].isin(['Alabama',  'Arizona', 'Arkansas',
        'California', 'Colorado', 'Connecticut', 'Delaware',
-       'District of Columbia', 'Florida', 'Georgia', 'Hawaii', 'Idaho',
+       'District of Columbia', 'Florida', 'Georgia',  'Idaho',
        'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana',
        'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota',
        'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada',
@@ -113,26 +113,39 @@ col0 = st.columns([1])[0]
 
 # column 0 header
 with col0:
-    st.header('Welcome to my economic dashboard!')
+    st.header('Welcome to Our economic dashboard!')
 
 
-# CHoro pleth map alternatint with input date 
-user_input = st.text_input( "Input text")
-st.write(user_input)
-start_time = st.slider('Years', 2010, 2021, 2010)
-df1_states_recent = df1_states[df1_states["Year"] == start_time]
-if(user_input != "" ):
-    fig = px.choropleth(df1_states_recent,
-                    locations="Abbrev",
-                    color= "Personal Income",
-                    locationmode="USA-states",
-                    range_color=(0,df1_states_recent["Personal Income"].max()),
-                    scope="usa")
-    fig.update_geos(fitbounds="locations", visible=False)
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    st.plotly_chart(fig)
+#C                          HANGES TODAY
 
-st.dataframe(df1)
+
+map_type = st.multiselect(
+        "Select category of Data.",
+        ['Real GDP', 'Real GDP per Capita', 'Population', 'Personal Income', 'Personal Income per Capita'])
+
+map_var = ''.join(map_type)
+
+
+
+#start_time = st.select_slider('Years',  datetime.date(2011,1,1),datetime.date(2021,1,1))
+start_time = st.select_slider("Date", options = np.unique(df1_nat["Date"]))
+
+df1_states_recent = df1_states[df1_states["Date"] == start_time]
+if(map_var != "" ):
+  fig = px.choropleth(df1_states_recent,
+          locations="Abbrev",
+          color= map_var,
+          locationmode="USA-states",
+          #range_color=(0,df1_states_recent[map_var].max()),
+          range_color = (0, df1_states[map_var].max()),
+          scope="usa")
+  fig.update_geos(fitbounds="locations", visible=True)
+  fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+  st.plotly_chart(fig, use_container_width=True)
+
+
+#C                          HANGES TODAY
+
 
 # column 1 pick a state for regression plot and real gdp data
 st.write('Choose state to view.')
@@ -188,7 +201,7 @@ if(complete):
     elif (chart == 'Line'):
         n_state_df = state_df.sort_values(by=cat_1)
         fig = px.line(
-            n_state_df, x= cat_1, y= cat_2, color = 'GeoName'
+            n_state_df, x= cat_1, y= cat_2, color = "GeoName"
         )
         created = True
     else:
@@ -206,3 +219,4 @@ if(created):
     fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='Gray')
     #fixes plot sizing
     st.plotly_chart(fig, use_container_width=True)
+
