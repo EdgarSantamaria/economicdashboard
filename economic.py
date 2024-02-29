@@ -113,7 +113,7 @@ col0 = st.columns([1])[0]
 
 # column 0 header
 with col0:
-    st.header('Welcome to Our economic dashboard!')
+    st.header('Economic Dashboard of the United States')
 
 
 #C                          HANGES TODAY
